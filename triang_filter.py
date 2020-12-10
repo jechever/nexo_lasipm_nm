@@ -6,28 +6,33 @@ import matplotlib.pyplot as plt
 
 def gen_triang_wf(NS, TS, tp):
 
-    xtri = [ (x+1)*TS for x in range(-floor(NS/2), floor(NS/2))]
+    #xtri = [ (x+1)*TS for x in range(-floor(NS/2), floor(NS/2))]
     
-    tri_ = []
-    tri_.append(1)
+    #tri_ = []
+    #tri_.append(1)
     
-    for i in range(1,floor(NS/2)):
-        if i*TS<tp:
-            y = (tp - i*TS)/tp
-        else:
-            y = 0
-        tri_.append(y)
+    #for i in range(1,floor(NS/2)):
+        #if i*TS<tp:
+            #y = (tp - i*TS)/tp
+        #else:
+            #y = 0
+        #tri_.append(y)
 
-    tri = []
-    for y_ in np.flip(tri_[1:],0):
-        tri.append(y_)
+    #tri = []
+    #for y_ in np.flip(tri_[1:],0):
+        #tri.append(y_)
 
-    for y_ in tri_:
-        tri.append(y_)
+    #for y_ in tri_:
+        #tri.append(y_)
 
-    tri.append(0)
+    #tri.append(0)
     #tri = tri / np.sum(tri)
     
+    # Vectorize operation for faster processing 
+    xtri=(np.arange(-floor(NS/2), floor(NS/2))+1)*TS
+    i=np.arange(1,floor(NS/2))
+    tri_=(tp-i*TS)/tp*(i*TS<tp)    
+    tri=np.concatenate((np.flip(tri2_,0),[1],tri2_))
     return xtri, tri
 
 # Dummy time-domain SiPM signal
@@ -49,9 +54,16 @@ def trig_filter(input, NS, TS, tp):
     # TS - time step between samples
     # tp - filter peaking time
     
-    xtri, tri = gen_triang_wf(NS, TS, tp)
-    return xtri, np.convolve(tri, input, mode='same'), tri
-
+    #xtri, tri = gen_triang_wf(NS, TS, tp)
+    #return xtri, np.convolve(tri, input, mode='same'), tri
+    
+    # Add fftconvolve method for processing large datasets. Convolution operation is far too slow otherwise 
+    if NS < 10000: 
+        xtri, tri = gen_triang_wf(NS, TS, tp)
+        return xtri, np.convolve(tri, input, mode='same'), tri
+    elif NS > 10000: 
+        xtri, tri = gen_triang_wf(NS, TS, tp)
+        return xtri, fftconvolve(tri, input, mode='same'), tri
 
 ## ################## ##
 ##     MAIN BODY      ##
